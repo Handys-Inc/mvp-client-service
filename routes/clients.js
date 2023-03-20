@@ -9,6 +9,7 @@ const router = express.Router();
 
 
 router.put("/booking/:id/cancel", auth, clientController.cancelBooking);
+router.get("/booking/:id/", auth, clientController.checkCancellation);
 
 
 
