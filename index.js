@@ -25,10 +25,10 @@ app.use((req, res, next) => {
 
 app.options("*", cors());
 
-//const clientRoutes = require('./routes/clients');
+const clientRoutes = require('./routes/clients');
 
 app.get("/", (req, res, next) => { return res.status(200).json({message: "Welcome to Handys Client API"})});
-//app.use("/api/clients", clientRoutes);
+app.use("/api/clients", clientRoutes);
 
 app.use(session({
   secret: process.env.JWT_KEY,
