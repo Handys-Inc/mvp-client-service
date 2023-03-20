@@ -20,4 +20,7 @@ const ticketSchema = new mongoose.Schema({
     issue: {
         type: String,
     }
-})
+});
+
+const Ticket = mongoose.model('Ticket', ticketSchema);
+module.exports.Ticket = Ticket;
