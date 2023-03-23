@@ -5,8 +5,12 @@ require("dotenv").config();
 
 async function fetchServiceProviderSchema () {
     const url = process.env.PROVIDER_SCHEMA;
-    const response = await axios.get(url);
-    return response.data;
+    try {
+        const response = await axios.get(url);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 const serviceProviderSchema =  fetchServiceProviderSchema();
