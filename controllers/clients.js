@@ -1,5 +1,6 @@
 const { Booking } = require('../models/booking');
 const { Dispute } = require('../models/dispute');
+const cloudinary = require('cloudinary').v2;
 
 exports.cancelBooking = async (req, res, next) => {
     const user_id = req.user._id;
