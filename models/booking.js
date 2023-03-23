@@ -1,9 +1,10 @@
 const axios = require('axios');
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 
 async function fetchBookingSchema () {
-    const url = 'https://res.cloudinary.com/handys-ca/raw/upload/v1679289185/App-files/booking_hq9a48.js';
+    const url = process.env.BOOKING_SCHEMA;
     const response = await axios.get(url);
     return response.data;
 }
