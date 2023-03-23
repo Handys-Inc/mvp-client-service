@@ -1,12 +1,16 @@
 const axios = require('axios');
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 
 async function fetchServiceProviderSchema () {
-    const url = 'https://res.cloudinary.com/handys-ca/raw/upload/v1678739182/App-files/service-provider_bz68gf.js';
-    const response = await axios.get(url);
-    //console.log(response)
-    return response.data;
+    const url = process.env.PROVIDER_SCHEMA;
+    try {
+        const response = await axios.get(url);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 const serviceProviderSchema =  fetchServiceProviderSchema();
