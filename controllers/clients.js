@@ -1,4 +1,5 @@
-const {Booking} = require('../models/booking');
+const { Booking } = require('../models/booking');
+const { Dispute } = require('../models/dispute');
 
 exports.cancelBooking = async (req, res, next) => {
     const user_id = req.user._id;
@@ -61,5 +62,46 @@ exports.getServiceHistory = async (req, res, next) => {
         return res.status(200).send(bookings);
     } catch (error) {
         console.log(error);
+    }
+};
+
+exports.createDispute = async (req, res) => {
+    const userId = req.user_id;
+
+    const disputeData = JSON.parse(req.body.jsonData);
+    const files = req.files;
+
+    const {bookingCode, disputeType, information} = disputeData;
+
+    const filename = `disputes_${userId.toString()}`;
+
+    try {
+        const images = await Promise.all(
+            files.map( async (file) => {
+                const options = { public_id: filename, folder: 'disputes'};
+                const cloudinaryResponse = await cloudinary.uploader.upload(file.path, options);
+    
+                return cloudinaryResponse.secure_url;
+            }));
+            
+        const dispute = new Dispute({
+            client: userId,
+            bookingCode: bookingCode,
+            disputeType: disputeType,
+            information: information,
+            disputeImages: images
+        });
+
+        try {
+            await dispute.save();
+            res.status(200).send({
+                message: "Dispute created",
+                dispute: dispute
+            })
+        } catch (error) {
+            res.status(500).send(`Error creating dispute: ${error.message}`);
+        }
+    } catch (error) {
+        
     }
 };
