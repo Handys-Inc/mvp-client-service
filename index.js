@@ -27,6 +27,7 @@ app.options("*", cors());
 
 const clientRoutes = require('./routes/clients');
 const bookingRoutes = require('./routes/bookings');
+const reviewRoutes = require('./routes/reviews');
 
 app.get("/", (req, res, next) => { return res.status(200).json({message: "Welcome to Handys Client API"})});
 app.use("/api/clients", clientRoutes);
