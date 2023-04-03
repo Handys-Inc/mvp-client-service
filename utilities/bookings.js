@@ -1,5 +1,6 @@
 const { Booking } = require("../models/booking");
 const { Payment } = require("../models/payment");
+const crypto = require('crypto');
 
 async function createBooking ({ user, serviceProvider, startDate, endDate, address, duration, description,  bookingStatus, images}) {
     try {
