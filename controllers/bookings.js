@@ -33,9 +33,9 @@ exports.createBooking = async (req, res, next) => {
         if(!provider) return res.status(404).send("Service provider not found");
 
         //check availability
-        if(startDate < provider.availability.start || endDate > provider.availability.end) return res.status(400).send("Service provider is not available at this time");
-        if(startDate < provider.availability.start && endDate > provider.availability.end) return res.status(400).send("Service provider is not available at this time")
-        if(startDate > endDate) return res.status(400).send("Start date cannot be after end date");
+        // if(startDate < provider.availability.start || endDate > provider.availability.end) return res.status(400).send("Service provider is not available at this time");
+        // if(startDate < provider.availability.start && endDate > provider.availability.end) return res.status(400).send("Service provider is not available at this time")
+        // if(startDate > endDate) return res.status(400).send("Start date cannot be after end date");
 
 
         const images = await Promise.all(
@@ -49,7 +49,6 @@ exports.createBooking = async (req, res, next) => {
         const bookingStatus = provider.bookingType === 'instant' ? 'confirmed' : 'pending';
 
         let newBooking = await createBooking({ client, serviceProvider, startDate, endDate, city, location, number, code, duration, description, bookingStatus, images  });
-        console.log(`booking: ${newBooking}`)
         let newPayment = await createPayment({ booking: newBooking.bookingCode, cost, paymentMethod, paymentStatus });
 
         // TO-DO : send notification to service provider if status is pending
