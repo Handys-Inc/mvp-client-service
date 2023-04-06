@@ -1,22 +1,59 @@
-const axios = require('axios');
-const mongoose = require("mongoose");
-require("dotenv").config();
+const mongoose = require('mongoose');
 
 
-async function fetchBookingSchema () {
-    const url = process.env.BOOKING_SCHEMA;
-    try {
-        const response = await axios.get(url);
-        return response.data;
-    } catch (error) {
-        console.log(error);
-    }
-}
+const bookingSchema = new mongoose.Schema({
+    client: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'User'
+    },
+    serviceProvider: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'ServiceProvider'
+    },
+    bookingStatus: {
+        type: String,
+        enum: ['pending', 'confirmed', 'declined'],
+        //default: 'pending'
+    },
+    dates: {
+        start: { type: Date },
+        end: { type: Date }
+    },
+    address: {
+        city: {type: String},
+        location: {type: String},
+        number: {type: String},
+        code: {type: String},
+    },
+    duration: {
+        type: Number,
+    },
+    description: {
+        type: String,
+    },
+    jobStatus: {
+        type: String,
+        enum: ['active', 'completed', 'cancelled'],
+    },
+    bookingCode: {
+        type: String,
+    },
+    images: [
+        {
+            type: String,
+            description: String
+        }
+    ],
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    
+});
 
-const bookingSchema =  fetchBookingSchema();
 
-const BookingSchema = new mongoose.Schema(bookingSchema);
-
-const Booking = mongoose.model("Booking", BookingSchema);
+const Booking = mongoose.model('Booking', bookingSchema);
 
 module.exports.Booking = Booking;

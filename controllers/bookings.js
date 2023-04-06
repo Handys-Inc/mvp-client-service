@@ -5,6 +5,7 @@ const { Booking } = require("../models/booking");
 
 const { createBooking, createPayment } = require("../utilities/bookings");
 const mongoose = require("mongoose");
+const _ = require("lodash");
 
 
 exports.createBooking = async (req, res, next) => {
@@ -18,6 +19,7 @@ exports.createBooking = async (req, res, next) => {
     const { client, serviceProvider, dates, address, duration, description, cost, paymentMethod, paymentStatus } = bookingData;
 
     const { start, end } = dates;
+    const { city, location, number, code} = address;
     let startNew = new Date(start);
     let endNew = new Date(end);
 
@@ -30,6 +32,12 @@ exports.createBooking = async (req, res, next) => {
         let provider = await ServiceProvider.findById(serviceProvider);
         if(!provider) return res.status(404).send("Service provider not found");
 
+        //check availability
+        if(startDate < provider.availability.start || endDate > provider.availability.end) return res.status(400).send("Service provider is not available at this time");
+        if(startDate < provider.availability.start && endDate > provider.availability.end) return res.status(400).send("Service provider is not available at this time")
+        if(startDate > endDate) return res.status(400).send("Start date cannot be after end date");
+
+
         const images = await Promise.all(
             bookingImages.map( async (file) => {
                 const options = { public_id: `booking_${file.originalname}`, folder: 'disputes'};
@@ -40,7 +48,8 @@ exports.createBooking = async (req, res, next) => {
 
         const bookingStatus = provider.bookingType === 'instant' ? 'confirmed' : 'pending';
 
-        let newBooking = await createBooking({ client, serviceProvider, startDate, endDate, address, duration, description, bookingStatus, images  });
+        let newBooking = await createBooking({ client, serviceProvider, startDate, endDate, city, location, number, code, duration, description, bookingStatus, images  });
+        console.log(`booking: ${newBooking}`)
         let newPayment = await createPayment({ booking: newBooking.bookingCode, cost, paymentMethod, paymentStatus });
 
         // TO-DO : send notification to service provider if status is pending

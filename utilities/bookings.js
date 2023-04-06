@@ -2,28 +2,33 @@ const { Booking } = require("../models/booking");
 const { Payment } = require("../models/payment");
 const crypto = require('crypto');
 
-async function createBooking ({ user, serviceProvider, startDate, endDate, address, duration, description,  bookingStatus, images}) {
-    try {
+async function createBooking ({ client, serviceProvider, startDate, endDate, city, location, number, code, duration, description,  bookingStatus, images}) {
         const bookingCode = await generateBookingCode();
 
-         const booking = new Booking({
-                client: user,
-                serviceProvider: serviceProvider,
-                bookingStatus: bookingStatus,
-                "dates.start": startDate,
-                "dates.end": endDate,
-                address: address,
-                status: 'active',
-                duration: duration,
-                description: description,
-                bookingCode: bookingCode, 
-                images : images
-             });
-    
-            await booking.save();
-            return booking
-        
-    } catch (error) {
+    try{
+        const booking = new Booking({
+            client: client,
+            serviceProvider: serviceProvider,
+            bookingStatus: bookingStatus,
+            "dates.start": startDate,
+            "dates.end": endDate,
+            "address.city": city,
+            "address.location": location,
+            "address.number": number,
+            "address.code": code,
+            duration: duration,
+            description: description,
+            jobStatus: 'active',
+            bookingCode: bookingCode, 
+            images : images
+         });
+
+        const savedBooking = await booking.save();
+        return {savedBooking, bookingCode};
+
+        }
+          
+     catch (error) {
         console.log(error)
     }
 }
@@ -33,7 +38,6 @@ async function generateBookingCode() {
         const random = Math.random().toString();
         const hash = crypto.createHash('sha256').update(timestamp + random).digest('hex');
         let bookingCode =  `HA${hash.slice(0, 6)}`; 
-        console.log(bookingCode)
         return bookingCode;
 }
 
@@ -43,7 +47,7 @@ async function createPayment ({ booking, cost, paymentMethod, paymentStatus }) {
             bookingCode: booking,
             amount: cost,
             paymentMethod: paymentMethod,
-            status: paymentStatus
+            status: 'pending'
         });
 
         await payment.save();
