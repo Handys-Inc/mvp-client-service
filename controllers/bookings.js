@@ -6,6 +6,7 @@ const { Booking } = require("../models/booking");
 const { createBooking, createPayment } = require("../utilities/bookings");
 const mongoose = require("mongoose");
 const _ = require("lodash");
+const { parse } = require('date-fns');
 
 
 exports.createBooking = async (req, res, next) => {
@@ -20,11 +21,15 @@ exports.createBooking = async (req, res, next) => {
 
     const { start, end } = dates;
     const { city, location, number, code} = address;
-    let startNew = new Date(start);
-    let endNew = new Date(end);
 
-    const startDate = startNew.toISOString();
-    const endDate = endNew ? endNew.toISOString() : null;
+    // let startNew = new Date(start);
+    // let endNew = new Date(end);
+
+    // const startDate = startNew.toISOString();
+    // const endDate = endNew ? endNew.toISOString() : null;
+
+    const startDate = parse(start, 'dd-MM-yyyy', new Date());
+    const endDate = end ? parse(end, 'dd-MM-yyyy', new Date()) : null;
 ;
 
     try {
