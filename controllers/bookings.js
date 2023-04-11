@@ -28,7 +28,7 @@ exports.createBooking = async (req, res, next) => {
 ;
 
     try {
-        //check what kind of booking the users can make - instant or reservation
+       
         let provider = await ServiceProvider.findById(serviceProvider);
         if(!provider) return res.status(404).send("Service provider not found");
 
@@ -46,6 +46,7 @@ exports.createBooking = async (req, res, next) => {
                 return cloudinaryResponse.secure_url;
             }));
 
+         //check what kind of booking the users can make - instant or reservation
         const bookingStatus = provider.bookingType === 'instant' ? 'confirmed' : 'pending';
 
         let newBooking = await createBooking({ client, serviceProvider, startDate, endDate, city, location, number, code, duration, description, bookingStatus, images  });
@@ -137,12 +138,91 @@ exports.getServiceHistory = async (req, res, next) => {
     let isValid = mongoose.Types.ObjectId.isValid(user_id);
     if(!isValid) return res.status(400).send("Invalid user id");
 
-    let bookings = await Booking.find({client: user_id, jobStatus: "completed"});
-    if(!bookings) return res.status(404).send("No bookings found");
-
     try {
+        let bookings = await Booking.find({client: user_id});
+        if(!bookings.length) return res.status(404).send("No bookings found");
+
+        for(const booking of bookings) {
+            let providerDetails = await User.findById(booking.serviceProvider).select('firstName lastName');
+            let providerService = await ServiceProvider.findById(booking.serviceProvider).select('serviceType');
+            booking.serviceProvider = {providerDetails, providerService};
+
+            let client = await User.findById(booking.client).select('firstName lastName');
+            booking.client = client;
+
+        }
+
         return res.status(200).send(bookings);
+        
     } catch (error) {
         console.log(error);
+    }
+};
+
+//bookingStatus jobStatus
+exports.getServiceHistoryByStatus = async (req, res, next) => {
+    const user = req.user._id;
+    let isValid = mongoose.Types.ObjectId.isValid(user);
+    if (!isValid) return res.status(400).send("Invalid user id");
+
+    const jobStatus = req.params.status;
+    try {
+
+        if(jobStatus === 'completed') {
+            let bookings = await Booking.find({client: user, jobStatus: "completed"});
+            if(!bookings.length) return res.status(404).send("No completed bookings found");
+    
+            for(const booking of bookings) {
+                let providerDetails = await User.findById(booking.serviceProvider).select('firstName lastName');
+                let providerService = await ServiceProvider.findById(booking.serviceProvider).select('serviceType');
+                booking.serviceProvider = {providerDetails, providerService};
+    
+                let client = await User.findById(booking.client).select('firstName lastName');
+                booking.client = client;
+    
+            }
+    
+            return res.status(200).send(bookings);
+        }
+
+        else if(jobStatus === 'pending') {
+            let bookings = await Booking.find({client: user, jobStatus: "active"});
+            if(!bookings.length) return res.status(404).send("No reservation requests found");
+    
+            for(const booking of bookings) {
+                let providerDetails = await User.findById(booking.serviceProvider).select('firstName lastName');
+                let providerService = await ServiceProvider.findById(booking.serviceProvider).select('serviceType');
+                booking.serviceProvider = {providerDetails, providerService};
+    
+                let client = await User.findById(booking.client).select('firstName lastName');
+                booking.client = client;
+    
+            }
+    
+            return res.status(200).send(bookings);
+        }
+
+        else if(jobStatus === 'requests') {
+            let bookings = await Booking.find({ client: user, bookingStatus: "pending"});
+            if(!bookings.length) return res.status(404).send("No reservation requests found");
+    
+            for(const booking of bookings) {
+                let providerDetails = await User.findById(booking.serviceProvider).select('firstName lastName');
+                let providerService = await ServiceProvider.findById(booking.serviceProvider).select('serviceType');
+                booking.serviceProvider = {providerDetails, providerService};
+    
+                let client = await User.findById(booking.client).select('firstName lastName');
+                booking.client = client;
+    
+            }
+            return res.status(200).send(bookings);
+        }
+        
+        else
+            return res.status(400).send("Invalid job status");
+    
+        
+    } catch (error) {
+        console.log(error)
     }
 };

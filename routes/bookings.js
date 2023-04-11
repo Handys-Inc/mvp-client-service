@@ -21,6 +21,7 @@ router.post("/", auth, upload.array('bookingImages'), bookingController.createBo
 router.put("/:id/cancel", auth, bookingController.cancelBooking);
 router.get("/:id/cancel", auth, bookingController.checkCancellation);
 router.get("/history", auth, bookingController.getServiceHistory);
+router.get("/history/:status", auth, bookingController.getServiceHistoryByStatus);
 
 
 
