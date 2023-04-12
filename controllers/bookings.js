@@ -22,25 +22,15 @@ exports.createBooking = async (req, res, next) => {
     const { start, end } = dates;
     const { city, location, number, code} = address;
 
-    // let startNew = new Date(start);
-    // let endNew = new Date(end);
-
-    // const startDate = startNew.toISOString();
-    // const endDate = endNew ? endNew.toISOString() : null;
-
     const startDate = parse(start, 'dd-MM-yyyy', new Date());
     const endDate = end ? parse(end, 'dd-MM-yyyy', new Date()) : null;
-;
+
+    let provider_id =  new mongoose.Types.ObjectId(serviceProvider);
 
     try {
        
-        let provider = await ServiceProvider.findOne({ user: serviceProvider});
+        let provider = await ServiceProvider.find({ user: provider_id  });
         if(!provider) return res.status(404).send("Service provider not found");
-
-        //check availability
-        // if(startDate < provider.availability.start || endDate > provider.availability.end) return res.status(400).send("Service provider is not available at this time");
-        // if(startDate < provider.availability.start && endDate > provider.availability.end) return res.status(400).send("Service provider is not available at this time")
-        // if(startDate > endDate) return res.status(400).send("Start date cannot be after end date");
 
 
         const images = await Promise.all(
@@ -77,10 +67,11 @@ exports.markJobCompleted = async (req, res, next) => {
     let isValid = mongoose.Types.ObjectId.isValid(user);
     if (!isValid) return res.status(400).send("Invalid user id");
 
-    let booking = await Booking.findById(req.params.id);
+
+    let booking = await Booking.find({bookingCode : req.params.code});
     if(!booking) return res.status(404).send("Booking not found");
 
-    let updateJob = await Booking.updateOne({_id: req.params.id}, {
+    let updateJob = await Booking.updateOne({bookingCode: req.params.code}, {
         $set: {
             jobStatus: "completed"
         }
@@ -95,7 +86,7 @@ exports.checkCancellation = async (req, res, next) => {
     let isValid = mongoose.Types.ObjectId.isValid(user_id);
     if(!isValid) return res.status(400).send("Invalid user id");
 
-    let booking = await Booking.findById(req.params.id);
+    let booking = await Booking.find({bookingCode: req.params.code});
     if(!booking) return res.status(404).send("Booking not found");
 
     if(booking.status === "cancelled") return res.status(400).send("Booking already cancelled");
@@ -114,13 +105,13 @@ exports.cancelBooking = async (req, res, next) => {
     let isValid = mongoose.Types.ObjectId.isValid(user_id);
     if(!isValid) return res.status(400).send("Invalid user id");
 
-    let booking = await Booking.findById(req.params.id);
+    let booking = await Booking.find({bookingCode: req.params.code});
     if(!booking) return res.status(404).send("Booking not found");
 
     if(booking.status === "cancelled") return res.status(400).send("Booking already cancelled");
 
     try {
-            let cancelBooking = await Booking.updateOne({_id: req.params.id}, {
+            let cancelBooking = await Booking.updateOne({bookingCode: req.params.code}, {
                 $set: {
                     jobStatus: "cancelled"
                 }
@@ -149,7 +140,7 @@ exports.getServiceHistory = async (req, res, next) => {
 
         for(const booking of bookings) {
             let providerDetails = await User.findById(booking.serviceProvider).select('firstName lastName');
-            let providerService = await ServiceProvider.findById(booking.serviceProvider).select('serviceType');
+            let providerService = await ServiceProvider.find({user: booking.serviceProvider}).select('serviceType');
             booking.serviceProvider = {providerDetails, providerService};
 
             let client = await User.findById(booking.client).select('firstName lastName');
@@ -179,7 +170,7 @@ exports.getServiceHistoryByStatus = async (req, res, next) => {
     
             for(const booking of bookings) {
                 let providerDetails = await User.findById(booking.serviceProvider).select('firstName lastName');
-                let providerService = await ServiceProvider.findById(booking.serviceProvider).select('serviceType');
+                let providerService = await ServiceProvider.find({user: booking.serviceProvider}).select('serviceType');
                 booking.serviceProvider = {providerDetails, providerService};
     
                 let client = await User.findById(booking.client).select('firstName lastName');
@@ -196,7 +187,7 @@ exports.getServiceHistoryByStatus = async (req, res, next) => {
     
             for(const booking of bookings) {
                 let providerDetails = await User.findById(booking.serviceProvider).select('firstName lastName');
-                let providerService = await ServiceProvider.findById(booking.serviceProvider).select('serviceType');
+                let providerService = await ServiceProvider.find({user: booking.serviceProvider}).select('serviceType');
                 booking.serviceProvider = {providerDetails, providerService};
     
                 let client = await User.findById(booking.client).select('firstName lastName');
@@ -213,7 +204,7 @@ exports.getServiceHistoryByStatus = async (req, res, next) => {
     
             for(const booking of bookings) {
                 let providerDetails = await User.findById(booking.serviceProvider).select('firstName lastName');
-                let providerService = await ServiceProvider.findById(booking.serviceProvider).select('serviceType');
+                let providerService = await ServiceProvider.find({user: booking.serviceProvider}).select('serviceType');
                 booking.serviceProvider = {providerDetails, providerService};
     
                 let client = await User.findById(booking.client).select('firstName lastName');
