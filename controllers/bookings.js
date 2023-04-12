@@ -34,7 +34,7 @@ exports.createBooking = async (req, res, next) => {
 
     try {
        
-        let provider = await ServiceProvider.findById(serviceProvider);
+        let provider = await ServiceProvider.findOne({ user: serviceProvider});
         if(!provider) return res.status(404).send("Service provider not found");
 
         //check availability
