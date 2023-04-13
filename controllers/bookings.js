@@ -138,14 +138,29 @@ exports.getServiceHistory = async (req, res, next) => {
         let bookings = await Booking.find({client: user_id});
         if(!bookings.length) return res.status(404).send("No bookings found");
 
-        for(const booking of bookings) {
-            let providerDetails = await User.findById(booking.serviceProvider).select('firstName lastName');
-            let providerService = await ServiceProvider.find({user: booking.serviceProvider}).select('serviceType');
-            booking.serviceProvider = {providerDetails, providerService};
+        for(let i = 0; i < bookings.length; i++) {
 
-            let client = await User.findById(booking.client).select('firstName lastName');
-            booking.client = client;
+            let booking = bookings[i];
 
+            let provider = {};
+
+            let provider_id = new mongoose.Types.ObjectId(booking.serviceProvider)
+            let providerName = await User.findById(provider_id).select('firstName lastName');
+            let providerDetails = await ServiceProvider.findOne({user: provider_id}).select('profilePicture serviceType rate experience');
+
+            provider.name = providerName;
+            provider.details = providerDetails;
+
+
+            let client = await User.findById(booking.client).select('firstName lastName email');
+
+            let updatedBooking = {
+                ...booking.toObject(),
+                provider,
+                client
+            };
+
+            bookings[i] = updatedBooking;
         }
 
         return res.status(200).send(bookings);
@@ -167,15 +182,29 @@ exports.getServiceHistoryByStatus = async (req, res, next) => {
         if(jobStatus === 'completed') {
             let bookings = await Booking.find({client: user, jobStatus: "completed"});
             if(!bookings.length) return res.status(404).send("No completed bookings found");
+
+            for(let i = 0; i < bookings.length; i++) {
+
+                let booking = bookings[i];
     
-            for(const booking of bookings) {
-                let providerDetails = await User.findById(booking.serviceProvider).select('firstName lastName');
-                let providerService = await ServiceProvider.find({user: booking.serviceProvider}).select('serviceType');
-                booking.serviceProvider = {providerDetails, providerService};
+                let provider = {};
     
-                let client = await User.findById(booking.client).select('firstName lastName');
-                booking.client = client;
+                let provider_id = new mongoose.Types.ObjectId(booking.serviceProvider)
+                let providerName = await User.findById(provider_id).select('firstName lastName');
+                let providerDetails = await ServiceProvider.findOne({user: provider_id}).select('profilePicture serviceType rate experience');
     
+                provider.name = providerName;
+                provider.details = providerDetails;
+    
+    
+                let client = await User.findById(booking.client).select('firstName lastName email');
+    
+                let updatedBooking = {
+                    ...booking.toObject(),
+                    provider,
+                    client
+                };
+                bookings[i] = updatedBooking;
             }
     
             return res.status(200).send(bookings);
@@ -185,15 +214,30 @@ exports.getServiceHistoryByStatus = async (req, res, next) => {
             let bookings = await Booking.find({client: user, jobStatus: "active"});
             if(!bookings.length) return res.status(404).send("No reservation requests found");
     
-            for(const booking of bookings) {
-                let providerDetails = await User.findById(booking.serviceProvider).select('firstName lastName');
-                let providerService = await ServiceProvider.find({user: booking.serviceProvider}).select('serviceType');
-                booking.serviceProvider = {providerDetails, providerService};
+            for(let i = 0; i < bookings.length; i++) {
+
+                let booking = bookings[i];
     
-                let client = await User.findById(booking.client).select('firstName lastName');
-                booking.client = client;
+                let provider = {};
     
+                let provider_id = new mongoose.Types.ObjectId(booking.serviceProvider)
+                let providerName = await User.findById(provider_id).select('firstName lastName');
+                let providerDetails = await ServiceProvider.findOne({user: provider_id}).select('profilePicture serviceType rate experience');
+    
+                provider.name = providerName;
+                provider.details = providerDetails;
+    
+    
+                let client = await User.findById(booking.client).select('firstName lastName email');
+    
+                let updatedBooking = {
+                    ...booking.toObject(),
+                    provider,
+                    client
+                };
+                bookings[i] = updatedBooking;
             }
+  
     
             return res.status(200).send(bookings);
         }
@@ -202,14 +246,28 @@ exports.getServiceHistoryByStatus = async (req, res, next) => {
             let bookings = await Booking.find({ client: user, bookingStatus: "pending"});
             if(!bookings.length) return res.status(404).send("No reservation requests found");
     
-            for(const booking of bookings) {
-                let providerDetails = await User.findById(booking.serviceProvider).select('firstName lastName');
-                let providerService = await ServiceProvider.find({user: booking.serviceProvider}).select('serviceType');
-                booking.serviceProvider = {providerDetails, providerService};
+            for(let i = 0; i < bookings.length; i++) {
+
+                let booking = bookings[i];
     
-                let client = await User.findById(booking.client).select('firstName lastName');
-                booking.client = client;
+                let provider = {};
     
+                let provider_id = new mongoose.Types.ObjectId(booking.serviceProvider)
+                let providerName = await User.findById(provider_id).select('firstName lastName');
+                let providerDetails = await ServiceProvider.findOne({user: provider_id}).select('profilePicture serviceType rate experience');
+    
+                provider.name = providerName;
+                provider.details = providerDetails;
+    
+    
+                let client = await User.findById(booking.client).select('firstName lastName email');
+    
+                let updatedBooking = {
+                    ...booking.toObject(),
+                    provider,
+                    client
+                };
+                bookings[i] = updatedBooking;
             }
             return res.status(200).send(bookings);
         }
