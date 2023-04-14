@@ -46,6 +46,14 @@ const bookingSchema = new mongoose.Schema({
             description: String
         }
     ],
+    totalCost: {
+        type: Number
+    },
+    costBreakdown : {
+        grossAmount: { type: mongoose.Schema.Types.Decimal128},
+        tax: { type: mongoose.Schema.Types.Decimal128},
+        serviceCharge: { type: mongoose.Schema.Types.Decimal128}
+    },
     createdAt: {
         type: Date,
         default: Date.now

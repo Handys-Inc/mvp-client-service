@@ -2,8 +2,8 @@ const { Booking } = require("../models/booking");
 const { Payment } = require("../models/payment");
 const crypto = require('crypto');
 
-async function createBooking ({ client, serviceProvider, startDate, endDate, city, location, number, code, duration, description,  bookingStatus, images}) {
-        const bookingCode = await generateBookingCode();
+async function createBooking ({ client, serviceProvider, startDate, endDate, city, location, number, code, duration, description,  bookingStatus, images, totalCost, grossAmount, tax, serviceCharge}) {
+    const bookingCode = await generateBookingCode();
 
     try{
         const booking = new Booking({
@@ -20,7 +20,11 @@ async function createBooking ({ client, serviceProvider, startDate, endDate, cit
             description: description,
             jobStatus: 'active',
             bookingCode: bookingCode, 
-            images : images
+            images : images,
+            totalCost: totalCost,
+            "costBreakdown.grossAmount": grossAmount,
+            "costBreakdown.tax": tax,
+            "costBreakdown.serviceCharge": serviceCharge
          });
 
         const savedBooking = await booking.save();
@@ -41,7 +45,7 @@ async function generateBookingCode() {
         return bookingCode;
 }
 
-async function createPayment ({ booking, cost, paymentMethod, paymentStatus }) {
+async function createPayment ({ booking, cost, paymentMethod }) {
     try {
         const payment = new Payment({
             bookingCode: booking,
