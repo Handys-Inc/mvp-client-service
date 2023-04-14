@@ -8,6 +8,24 @@ const mongoose = require("mongoose");
 const _ = require("lodash");
 const { parse } = require('date-fns');
 
+async function calculateCostBreakDown(cost, duration, providerRate) {
+    const grossAmount = providerRate * duration;
+    const tax = grossAmount * 0.05;
+    const serviceCharge = 10;
+    const totalCost = grossAmount + tax + serviceCharge;
+    
+    
+    let confirmCost = cost === totalCost ? true : false;
+    if(!confirmCost) return false;
+    else
+        return { 
+            grossAmount,
+            tax,
+            serviceCharge,
+            totalCost
+        }
+}
+
 
 exports.createBooking = async (req, res, next) => {
     const user = req.user._id;
@@ -17,7 +35,7 @@ exports.createBooking = async (req, res, next) => {
     const bookingData = JSON.parse(req.body.jsonData);
     const bookingImages = req.files;
 
-    const { client, serviceProvider, dates, address, duration, description, cost, paymentMethod, paymentStatus } = bookingData;
+    const { client, serviceProvider, dates, address, duration, description, cost, paymentMethod } = bookingData;
 
     const { start, end } = dates;
     const { city, location, number, code} = address;
@@ -29,8 +47,21 @@ exports.createBooking = async (req, res, next) => {
 
     try {
        
-        let provider = await ServiceProvider.find({ user: provider_id  });
+        let provider = await ServiceProvider.findOne({ user: provider_id  });
         if(!provider) return res.status(404).send("Service provider not found");
+
+        //converting to object
+        let providerObj = provider.toObject()
+
+        //calculate cost breakdown
+        const costBreakdown = await calculateCostBreakDown(cost, duration, providerObj.rate);
+
+        if(costBreakdown === false) return res.status(400).send("Cost incorrect"); 
+
+        let grossAmount = costBreakdown.grossAmount;
+        let tax = costBreakdown.tax;
+        let serviceCharge = costBreakdown.serviceCharge;
+        let totalCost = costBreakdown.totalCost;
 
 
         const images = await Promise.all(
@@ -42,10 +73,10 @@ exports.createBooking = async (req, res, next) => {
             }));
 
          //check what kind of booking the users can make - instant or reservation
-        const bookingStatus = provider.bookingType === 'instant' ? 'confirmed' : 'pending';
+        const bookingStatus = providerObj.bookingType === 'instant' ? 'confirmed' : 'pending';
 
-        let newBooking = await createBooking({ client, serviceProvider, startDate, endDate, city, location, number, code, duration, description, bookingStatus, images  });
-        let newPayment = await createPayment({ booking: newBooking.bookingCode, cost, paymentMethod, paymentStatus });
+        let newBooking = await createBooking({ client, serviceProvider, startDate, endDate, city, location, number, code, duration, description, bookingStatus, images, totalCost, grossAmount, tax, serviceCharge  });
+        let newPayment = await createPayment({ booking: newBooking.bookingCode, cost, paymentMethod });
 
         // TO-DO : send notification to service provider if status is pending
 
