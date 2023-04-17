@@ -47,7 +47,7 @@ const bookingSchema = new mongoose.Schema({
         }
     ],
     totalCost: {
-        type: Number
+        type: mongoose.Schema.Types.Decimal128
     },
     costBreakdown : {
         grossAmount: { type: mongoose.Schema.Types.Decimal128},
@@ -60,6 +60,16 @@ const bookingSchema = new mongoose.Schema({
     },
     
 });
+
+// Define the transform function for the schema
+bookingSchema.set('toObject', {
+    transform: function (doc, ret, options) {
+      ret.totalCost = parseFloat(ret.totalCost.toString());
+      ret.costBreakdown.grossAmount = parseFloat(ret.costBreakdown.grossAmount.toString());
+      ret.costBreakdown.tax = parseFloat(ret.costBreakdown.tax.toString());
+      ret.costBreakdown.serviceCharge = parseFloat(ret.costBreakdown.serviceCharge.toString());
+    }
+  });
 
 
 const Booking = mongoose.model('Booking', bookingSchema);

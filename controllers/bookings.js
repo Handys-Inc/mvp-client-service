@@ -78,10 +78,23 @@ exports.createBooking = async (req, res, next) => {
         let newBooking = await createBooking({ client, serviceProvider, startDate, endDate, city, location, number, code, duration, description, bookingStatus, images, totalCost, grossAmount, tax, serviceCharge  });
         let newPayment = await createPayment({ booking: newBooking.bookingCode, cost, paymentMethod });
 
+        //get provider details
+        //get main user id for provider
+        let provider_user = providerObj.user;
+        let pid = new mongoose.Types.ObjectId(provider_user);
+
+        //let provider_id = new mongoose.Types.ObjectId(newBooking.bookingObject.serviceProvider)
+        let providerName = await User.findOne({ _id: pid }).select('firstName lastName -_id');
+        let bookingData = {
+            serviceProvider: providerName,
+            bookingCode: newBooking.bookingCode,
+        }
+
         // TO-DO : send notification to service provider if status is pending
 
             if(newBooking && newPayment) {
-                return res.status(200).send(_.pick(newBooking, ["_id", "bookingCode", "client", "serviceProvider", "dates", "address", "duration", "description", "bookingStatus", "jobStatus", "images"]));
+                //return res.status(200).send(_.pick(newBooking, ["_id", "bookingCode", "client", "serviceProvider", "dates", "address", "duration", "description", "bookingStatus", "jobStatus", "images"]));
+                return res.status(200).send(bookingData);
             }
             else {
                 return res.status(400).send("Booking failed");
