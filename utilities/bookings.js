@@ -28,7 +28,9 @@ async function createBooking ({ client, serviceProvider, startDate, endDate, cit
          });
 
         const savedBooking = await booking.save();
-        return {savedBooking, bookingCode};
+        const bookingObject = savedBooking.toObject();
+
+        return {bookingObject, bookingCode};
 
         }
           
