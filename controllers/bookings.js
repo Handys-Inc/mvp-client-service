@@ -130,7 +130,7 @@ exports.checkCancellation = async (req, res, next) => {
     let isValid = mongoose.Types.ObjectId.isValid(user_id);
     if(!isValid) return res.status(400).send("Invalid user id");
 
-    let booking = await Booking.find({bookingCode: req.params.code});
+    let booking = await Booking.findOne({bookingCode: req.params.code});
     if(!booking) return res.status(404).send("Booking not found");
 
     if(booking.status === "cancelled") return res.status(400).send("Booking already cancelled");
