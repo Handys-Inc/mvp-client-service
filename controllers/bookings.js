@@ -13,6 +13,7 @@ async function calculateCostBreakDown(cost, duration, providerRate) {
     const tax = grossAmount * 0.05;
     const serviceCharge = 10;
     const totalCost = grossAmount + tax + serviceCharge;
+    const providerAmount = totalCost - (serviceCharge + tax) ;
     
     
     let confirmCost = cost === totalCost ? true : false;
@@ -22,6 +23,7 @@ async function calculateCostBreakDown(cost, duration, providerRate) {
             grossAmount,
             tax,
             serviceCharge,
+            providerAmount,
             totalCost
         }
 }
@@ -62,6 +64,7 @@ exports.createBooking = async (req, res, next) => {
         let tax = costBreakdown.tax;
         let serviceCharge = costBreakdown.serviceCharge;
         let totalCost = costBreakdown.totalCost;
+        let providerAmount = costBreakdown.providerAmount;
 
 
         const images = await Promise.all(
@@ -76,7 +79,7 @@ exports.createBooking = async (req, res, next) => {
         const bookingStatus = providerObj.bookingType === 'instant' ? 'confirmed' : 'pending';
 
         let newBooking = await createBooking({ client, serviceProvider, startDate, endDate, city, location, number, code, duration, description, bookingStatus, images, totalCost, grossAmount, tax, serviceCharge  });
-        let newPayment = await createPayment({ booking: newBooking.bookingCode, cost, paymentMethod });
+        let newPayment = await createPayment({ booking: newBooking.bookingCode, cost, paymentMethod, serviceProvider, providerAmount });
 
         //get provider details
         //get main user id for provider
