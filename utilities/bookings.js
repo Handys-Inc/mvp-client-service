@@ -47,14 +47,14 @@ async function generateBookingCode() {
         return bookingCode;
 }
 
-async function createPayment ({ booking, cost, paymentMethod, provider, providerAmount }) {
+async function createPayment ({ booking, cost, paymentMethod, serviceProvider, providerAmount }) {
     try {
         const payment = new Payment({
             bookingCode: booking,
             amount: cost,
             paymentMethod: paymentMethod,
             status: 'pending',
-            "providerPayout.provider": provider,
+            "providerPayout.provider": serviceProvider,
             "providerPayout.amount": providerAmount,
             "providerPayout.payoutStatus": "pending"
         });
