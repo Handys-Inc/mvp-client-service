@@ -4,13 +4,13 @@ const cloudinary = require('cloudinary').v2;
 
 exports.createDispute = async (req, res) => {
     const userId = req.user_id;
+    let isValid = mongoose.Types.ObjectId.isValid(userId);
+    if (!isValid) return res.status(400).send("Invalid user id");
 
     const disputeData = JSON.parse(req.body.jsonData);
     const files = req.files;
 
     const {bookingCode, disputeType, information} = disputeData;
-
-    const filename = `disputes_${userId.toString()}`;
 
     try {
         const images = await Promise.all(
