@@ -1,6 +1,7 @@
 const { Booking } = require('../models/booking');
 const { Dispute } = require('../models/dispute');
 const cloudinary = require('cloudinary').v2;
+const mongoose = require("mongoose");
 
 exports.createDispute = async (req, res) => {
     const userId = req.user_id;
