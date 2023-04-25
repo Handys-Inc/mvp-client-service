@@ -4,7 +4,8 @@ const cloudinary = require('cloudinary').v2;
 const mongoose = require("mongoose");
 
 exports.createDispute = async (req, res) => {
-    const userId = req.user_id;
+    const userId = req.user._id;
+
     let isValid = mongoose.Types.ObjectId.isValid(userId);
     if (!isValid) return res.status(400).send("Invalid user id");
 

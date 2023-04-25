@@ -9,7 +9,7 @@ const disputeSchema = new mongoose.Schema({
     },
     serviceProvider: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true,
+        //required: true,
         ref: 'ServiceProvider'
     },
     bookingCode: {
