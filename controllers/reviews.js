@@ -22,7 +22,7 @@ exports.addReview = async (req, res, next) => {
        if (review) {
         return res.status(200).send({
             message: "Review successfully added",
-            review: detailedReview
+            review: review
            })
        }
        else{
