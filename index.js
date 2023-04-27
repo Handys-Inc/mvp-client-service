@@ -32,6 +32,7 @@ const reviewRoutes = require('./routes/reviews');
 app.get("/", (req, res, next) => { return res.status(200).json({message: "Welcome to Handys Client API"})});
 app.use("/api/clients", clientRoutes);
 app.use("/api/bookings", bookingRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 app.use(session({
   secret: process.env.JWT_KEY,
