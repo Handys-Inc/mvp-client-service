@@ -114,18 +114,27 @@ exports.markJobCompleted = async (req, res, next) => {
     let isValid = mongoose.Types.ObjectId.isValid(user);
     if (!isValid) return res.status(400).send("Invalid user id");
 
+    const bookingCode = req.params.bookingCode;
 
-    let booking = await Booking.find({bookingCode : req.params.code});
-    if(!booking) return res.status(404).send("Booking not found");
+    try {
+        let booking = await Booking.findOne({$and: [{ bookingCode : bookingCode, jobStatus: 'pendingApproval' }]});
+        if(!booking) return res.status(404).send("Booking not found");
 
-    let updateJob = await Booking.updateOne({bookingCode: req.params.code}, {
-        $set: {
-            jobStatus: "completed"
-        }
-    });
+        let approveCompletion = await Booking.findOneAndUpdate({bookingCode: req.params.code}, {
+            $set: {
+                jobStatus: "completed"
+            }
+        }, { new: true });
 
-    if(updateJob) return res.status(200).send("Job completed successfully");
-    else return res.status(400).send("Job could not be completed");    
+        if(approveCompletion.jobStatus === 'completed') return res.status(200).send({
+            message: "Job completion approved successfully"});
+
+        else return res.status(400).send("Job could not be completed");    
+    } catch (error) {
+        console.log(error);
+    }
+
+    
 };
 
 exports.checkCancellation = async (req, res, next) => {
@@ -133,7 +142,9 @@ exports.checkCancellation = async (req, res, next) => {
     let isValid = mongoose.Types.ObjectId.isValid(user_id);
     if(!isValid) return res.status(400).send("Invalid user id");
 
-    let booking = await Booking.findOne({bookingCode: req.params.code});
+    const bookingCode = req.params.bookingCode;
+
+    let booking = await Booking.findOne({bookingCode: bookingCode});
     if(!booking) return res.status(404).send("Booking not found");
 
     if(booking.status === "cancelled") return res.status(400).send("Booking already cancelled");
@@ -152,19 +163,21 @@ exports.cancelBooking = async (req, res, next) => {
     let isValid = mongoose.Types.ObjectId.isValid(user_id);
     if(!isValid) return res.status(400).send("Invalid user id");
 
-    let booking = await Booking.find({bookingCode: req.params.code});
+    const bookingCode = req.params.bookingCode;
+
+    let booking = await Booking.findOne({bookingCode: bookingCode});
     if(!booking) return res.status(404).send("Booking not found");
 
     if(booking.status === "cancelled") return res.status(400).send("Booking already cancelled");
 
     try {
-            let cancelBooking = await Booking.updateOne({bookingCode: req.params.code}, {
+            let cancelBooking = await Booking.findOneAndUpdate({bookingCode: bookingCode}, {
                 $set: {
                     jobStatus: "cancelled"
                 }
-            });
+            }, { new: true });
     
-            if(cancelBooking) return res.status(200).send({
+            if(cancelBooking.jobStatus === 'cancelled') return res.status(200).send({
                 message: "Booking cancelled successfully",
                 booking: cancelBooking
             });
@@ -258,7 +271,7 @@ exports.getServiceHistoryByStatus = async (req, res, next) => {
         }
 
         else if(jobStatus === 'pending') {
-            let bookings = await Booking.find({client: user, jobStatus: "active"});
+            let bookings = await Booking.find({client: user, jobStatus: "pendingApproval"});
             if(!bookings.length) return res.status(404).send("No reservation requests found");
     
             for(let i = 0; i < bookings.length; i++) {
@@ -290,7 +303,7 @@ exports.getServiceHistoryByStatus = async (req, res, next) => {
         }
 
         else if(jobStatus === 'requests') {
-            let bookings = await Booking.find({ client: user, bookingStatus: "pending"});
+            let bookings = await Booking.find({ client: user });
             if(!bookings.length) return res.status(404).send("No reservation requests found");
     
             for(let i = 0; i < bookings.length; i++) {

@@ -35,7 +35,7 @@ const bookingSchema = new mongoose.Schema({
     },
     jobStatus: {
         type: String,
-        enum: ['active', 'completed', 'cancelled'],
+        enum: ['active', 'pendingApproval', 'completed', 'cancelled'],
     },
     bookingCode: {
         type: String,

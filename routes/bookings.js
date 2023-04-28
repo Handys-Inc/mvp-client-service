@@ -16,10 +16,10 @@ const upload = multer({
 })
 
 
-router.post("/:code/complete", auth, bookingController.markJobCompleted);
+router.post("/:bookingCode/complete", auth, bookingController.markJobCompleted);
 router.post("/", auth, upload.array('bookingImages'), bookingController.createBooking);
-router.put("/:code/cancel", auth, bookingController.cancelBooking);
-router.get("/:code/cancel", auth, bookingController.checkCancellation);
+router.put("/:bookingCode/cancel", auth, bookingController.cancelBooking);
+router.get("/:bookingCode/cancel", auth, bookingController.checkCancellation);
 router.get("/history", auth, bookingController.getServiceHistory);
 router.get("/history/:status", auth, bookingController.getServiceHistoryByStatus);
 
